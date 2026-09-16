@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Aula 1 · Apresentação · PublicSoft</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="estilos-aula.css" data-build="fishfix-20260916" />
+</head>
+<body>
+<div class="shell">
+  <header class="topbar">
+    <div class="brand">
+      <img id="logo" class="morph-logo" alt="PublicSoft" />
+      <span>Aula 1 · apresentação</span>
+    </div>
+    <div class="top-actions">
+      <a class="btn btn-ghost btn-sm page-only" href="apoio.html">← Material de apoio</a>
+      <button class="btn btn-primary btn-sm" type="button" id="btnPresent">▶ Modo apresentação</button>
+    </div>
+  </header>
+
+  <div class="exit-hint">Esc sai · ← → navega · F tela cheia</div>
+  <div class="deck" id="deck">
+    <!-- Colmeia: markup idêntico ao login.vue (hex-cluster + hexf p1–p6 + --dx/--dy/--d) -->
+    <div class="morph-stage" id="morphStage" aria-hidden="true">
+      <div class="morph-backdrop"></div>
+      <div class="hex-cluster">
+        <span class="hexf hexf--p1" style="--dx:-90px; --dy:-70px; --d:0s"></span>
+        <span class="hexf hexf--p2" style="--dx:-120px; --dy:20px; --d:.35s"></span>
+        <span class="hexf hexf--p3" style="--dx:60px; --dy:-90px; --d:.7s"></span>
+        <span class="hexf hexf--p4" style="--dx:-70px; --dy:90px; --d:1.05s"></span>
+        <span class="hexf hexf--p5" style="--dx:40px; --dy:110px; --d:1.4s"></span>
+        <span class="hexf hexf--p6" style="--dx:120px; --dy:60px; --d:1.75s"></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="pres-ui" id="presUi" aria-label="Controles da apresentação">
+  <button class="btn btn-ghost btn-sm" type="button" id="prevBtn" title="Anterior">←</button>
+  <div class="count" id="slideCount">1 / 1</div>
+  <button class="btn btn-ghost btn-sm" type="button" id="nextBtn" title="Próximo">→</button>
+  <button class="btn btn-primary btn-sm" type="button" id="exitBtn">Sair</button>
+</div>
+<div class="toast" id="toast">Copiado</div>
+
+<script src="conteudo.js"></script>
+<script>
+const C = window.CURSO_AULA1;
+document.getElementById('logo').src = C.logo;
+
+const tipoLabel = {texto:'Texto', imagem:'Texto + imagem', video:'Vídeo', audio:'Áudio', musica:'Música', agente:'Agent'};
+const deck = document.getElementById('deck');
+const morphStage = document.getElementById('morphStage');
+
+function esc(s){return String(s).replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+
+const parts = [];
+parts.push(`
+<section class="slide" data-id="capa" data-title="Capa">
+  <div class="slide-kicker"><i></i> ${esc(C.meta)}</div>
+  <h1>${esc(C.titulo.replace('IA no dia a dia da PublicSoft','IA no dia a dia'))}</h1>
+  <p class="lead">Curso de Inteligência Artificial para colaboradores</p>
+  <p>Transição com a colmeia do login do Contrata Public.</p>
+  <div class="actions">
+    <button class="btn btn-primary" type="button" id="btnPresentHero">Começar apresentação</button>
+    <a class="btn btn-ghost" href="apoio.html">Abrir material de apoio</a>
+  </div>
+</section>`);
+
+parts.push(`
+<section class="slide slide--humor" data-id="mensagem" data-title="Mensagem">
+  <div class="slide-kicker"><i></i> Mensagem-chave</div>
+  <h2>O fio da aula</h2>
+  <div class="msg-humor">
+    <figure class="msg-foto">
+      <img src="${esc(C.mensagem.foto || 'assets/ia-dominar-mundo.jpg')}" alt="${esc(C.mensagem.fotoAlt || 'Humor de abertura')}" width="632" height="632" loading="eager" decoding="async" />
+      <figcaption>${esc(C.mensagem.fotoLegenda || '')}</figcaption>
+    </figure>
+    <div class="msg-copy">
+      <div class="quote"><strong>${esc(C.mensagem.titulo)}</strong><span>${esc(C.mensagem.sub)}</span></div>
+      <ul class="msg-pontos">${(C.mensagem.pontos||[]).map(p=>`<li>${esc(p)}</li>`).join('')}</ul>
+    </div>
+  </div>
+</section>`);
+
+parts.push(`
+<section class="slide slide--inspira" data-id="inspiracao" data-title="Inspiração">
+  <div class="slide-kicker"><i></i> Na PublicSoft</div>
+  <h2>${esc(C.inspiracao.titulo)}</h2>
+  <p class="lead">${esc(C.inspiracao.sub)}</p>
+  <div class="inspira-grid">${C.inspiracao.pessoas.map(p=>`
+    <article class="inspira-card">
+      <img class="inspira-foto" src="${esc(p.foto)}" alt="${esc(p.nome)}" />
+      <strong>${esc(p.nome)}</strong>
+      <span>${esc(p.app)}</span>
+    </article>`).join('')}</div>
+</section>`);
+
+C.inspiracao.pessoas.forEach(p=>{
+  parts.push(`
+<section class="slide slide--inspira-case" data-id="insp-${esc(p.id)}" data-title="${esc(p.nome)}">
+  <div class="slide-kicker"><i></i> Caso real</div>
+  <div class="inspira-case">
+    <div class="inspira-case-pessoa">
+      <img class="inspira-foto" src="${esc(p.foto)}" alt="${esc(p.nome)}" />
+      <div>
+        <h2>${esc(p.nome)}</h2>
+        <p class="lead">${esc(p.app)}</p>
+        <p>${esc(p.lead)}</p>
+        <p>${esc(p.desc)}</p>
+      </div>
+    </div>
+    <figure class="cena inspira-tela"><img src="${esc(p.tela)}" alt="${esc(p.telaAlt||p.app)}" /></figure>
+  </div>
+</section>`);
+});
+
+parts.push(`
+<section class="slide" data-id="futuro" data-title="Futuro">
+  <div class="slide-kicker"><i></i> Perspectivas</div>
+  <h2>Perspectivas de futuro</h2>
+  <div class="grid-4">${C.futuro.map(f=>`<article class="tile">${f.img?`<div class="tile-media"><img src="${esc(f.img)}" alt="${esc(f.imgAlt||f.t)}" /></div>`:''}<h3>${esc(f.t)}</h3><p>${esc(f.p)}</p></article>`).join('')}</div>
+</section>`);
+
+parts.push(`
+<section class="slide" data-id="ferramentas" data-title="Ferramentas">
+  <div class="slide-kicker"><i></i> Panorama</div>
+  <h2>Mapa das IAs</h2>
+  <p class="lead">Cada ferramenta resolve um tipo de trabalho.</p>
+  <p>Nas próximas telas: link, prompt de exemplo e botão para copiar e colar na IA.</p>
+  <div class="grid-2 mapa-ias">${(() => {
+    const row = ia => `<div class="mapa-ia">${ia.icone?`<img class="ia-ico" src="${esc(ia.icone)}" alt="">`:''}<span>${esc(ia.nome.split('·')[0].trim())}</span></div>`;
+    const texto = C.ias.filter(ia => ia.tipo==='texto' || ia.tipo==='imagem' || ia.tipo==='agente');
+    const midia = C.ias.filter(ia => ia.tipo==='musica' || ia.tipo==='video' || ia.tipo==='audio');
+    return `<article class="card"><h3>Texto / Agent</h3><div class="mapa-list">${texto.map(row).join('')}</div></article><article class="card"><h3>Mídia</h3><div class="mapa-list">${midia.map(row).join('')}</div></article>`;
+  })()}</div>
+</section>`);
+
+C.ias.forEach(ia=>{
+  const etica = ia.id==='fish'
+    ? `<article class="card"><h3>Cuidado ético</h3><p>Nunca clonar cliente, parceiro ou colega sem permissão escrita.</p></article>`
+    : '';
+  const ico = ia.icone ? `<img class="ia-ico" src="${esc(ia.icone)}" alt="" />` : '';
+  const cena = ia.cena ? `<figure class="cena"><img src="${esc(ia.cena)}" alt="${esc(ia.cenaAlt||ia.nome)}" /></figure>` : '';
+  const short = esc(ia.nome.split('·')[0].trim());
+  parts.push(`
+<section class="slide ia-slide" data-id="${esc(ia.id)}" data-title="${esc(ia.nome)}">
+  <div class="slide-kicker"><i></i> ${esc(tipoLabel[ia.tipo]||ia.tipo)}</div>
+  <div class="ia-head">${ico}<h2>${esc(ia.nome)}</h2></div>
+  <div class="ia-layout">
+    ${cena}
+    <div class="ia-hero">
+      <span class="badge">${esc(ia.tipo)}</span>
+      <p class="lead">${esc(ia.lead)}</p>
+      <p>${esc(ia.desc)}</p>
+      <div class="grid-2 ia-demo">
+        <article class="card">
+          <h3>Como abrir</h3>
+          <p>${esc(ia.comoAbrir||('Abra '+ia.url))}</p>
+          <p style="margin-top:8px;color:var(--quiet);font-size:12.5px">Prática: ${esc(ia.pratica||'')}</p>
+        </article>
+        <article class="card">
+          <h3>Na aula</h3>
+          <p>1) Abrir o link · 2) Copiar o prompt · 3) Colar na IA · 4) Ver o resultado.</p>
+          ${etica}
+        </article>
+      </div>
+      <p class="hint" style="margin-top:8px;margin-bottom:4px">Prompt de exemplo (copie e cole na IA)</p>
+      <textarea class="code ia-prompt" data-ia-prompt="${esc(ia.id)}" spellcheck="false"></textarea>
+    </div>
+  </div>
+  <div class="actions ia-actions">
+    <a class="btn btn-primary" href="${esc(ia.url)}" target="_blank" rel="noopener">${ico} Abrir ${short}</a>
+    <button class="btn btn-ghost" type="button" data-copy-ia="${esc(ia.id)}">Copiar prompt</button>
+    ${ia.extra?`<a class="btn btn-ghost" href="${esc(ia.extra)}" target="_blank" rel="noopener">Ver plano gratuito</a>`:''}
+  </div>
+</section>`);
+});
+
+parts.push(`
+<section class="slide" data-id="prompt" data-title="Prompt">
+  <div class="slide-kicker"><i></i> Estrutura</div>
+  <h2>Prompt em 5 blocos</h2>
+  <p>O único “texto para gravar” da aula.</p>
+  <div class="prompt-visual">
+    <figure class="cena prompt-foto"><img src="${esc((C.slidesImgs&&C.slidesImgs.promptBlocos)||'assets/slides/prompt-blocos.jpg')}" alt="Blocos de construção do prompt" /></figure>
+    <div class="prompt-row">${C.promptBlocos.map(b=>`<div class="step"><div class="n">${b.n}</div><strong>${esc(b.t)}</strong><span>${esc(b.d)}</span></div>`).join('')}</div>
+  </div>
+</section>`);
+
+parts.push(`
+<section class="slide" data-id="lab-suporte" data-title="Lab suporte">
+  <div class="slide-kicker"><i></i> Exercício</div>
+  <h2>Lab · Suporte</h2>
+  <p>Copie e cole na IA aberta.</p>
+  <div class="lab-layout">
+    <figure class="cena lab-foto"><img src="${esc((C.slidesImgs&&C.slidesImgs.labSuporte)||'assets/slides/lab-suporte.jpg')}" alt="Atendimento no celular à mesa" /></figure>
+    <div class="lab-copy">
+      <div class="actions"><button class="btn btn-primary btn-sm" type="button" data-copy="suporte">Copiar prompt</button></div>
+      <textarea class="code" id="promptSuporte" spellcheck="false"></textarea>
+    </div>
+  </div>
+</section>`);
+
+parts.push(`
+<section class="slide" data-id="lab-gestao" data-title="Lab gestão">
+  <div class="slide-kicker"><i></i> Exercício</div>
+  <h2>Lab · Gestão</h2>
+  <p>Copie e cole na IA aberta.</p>
+  <div class="lab-layout">
+    <figure class="cena lab-foto"><img src="${esc((C.slidesImgs&&C.slidesImgs.labGestao)||'assets/slides/lab-gestao.jpg')}" alt="Planilha de acompanhamento de licitações" /></figure>
+    <div class="lab-copy">
+      <div class="actions"><button class="btn btn-primary btn-sm" type="button" data-copy="gestao">Copiar prompt</button></div>
+      <textarea class="code" id="promptGestao" spellcheck="false"></textarea>
+    </div>
+  </div>
+</section>`);
+
+parts.push(`
+<section class="slide" data-id="proximo" data-title="Próximo">
+  <div class="slide-kicker"><i></i> 2º encontro</div>
+  <h2>Próximo: agentes de IA</h2>
+  <p class="lead accent">Chat responde · agente age.</p>
+  <div class="rail-layout">
+    <figure class="cena"><img src="${esc((C.slidesImgs&&C.slidesImgs.proximoAgentes)||'assets/slides/proximo-agentes.jpg')}" alt="Handoff com supervisão humana" /></figure>
+    <div class="grid-2">
+      <article class="card"><h3>O que vem</h3><p>Hermes, Grok Bot, Hermes + Ollama, Bitrix, WhatsApp, planilhas e licitações.</p></article>
+      <article class="card"><h3>Por que importa</h3><p>Hoje você escolhe a ferramenta e pede bem. Depois, a IA executa com a sua supervisão.</p></article>
+    </div>
+  </div>
+</section>`);
+
+parts.push(`
+<section class="slide" data-id="desafio" data-title="Desafio">
+  <div class="slide-kicker"><i></i> Encerramento</div>
+  <h2>Desafio até o próximo encontro</h2>
+  <div class="rail-layout">
+    <figure class="cena"><img src="${esc((C.slidesImgs&&C.slidesImgs.desafio)||'assets/slides/desafio.jpg')}" alt="Checklist do desafio até o próximo encontro" /></figure>
+    <div class="grid-2">
+      <article class="card"><h3>Faça</h3><ul><li>1 demanda real da sua função</li><li>Prompt com os 5 blocos</li><li>Guarde o antes / depois</li></ul></article>
+      <article class="card"><h3>Pense no agente</h3><ul><li>Liste 1 tarefa repetitiva</li><li>Bitrix, WhatsApp ou planilha</li><li>Traga no 2º encontro</li></ul></article>
+    </div>
+  </div>
+  <p class="hint">Obrigado · PublicSoft · Dúvidas no grupo</p>
+</section>`);
+
+const wrap = document.createElement('div');
+wrap.innerHTML = parts.join('');
+while(wrap.firstChild) deck.insertBefore(wrap.firstChild, morphStage);
+
+document.getElementById('promptSuporte').value = C.labSuporte;
+document.getElementById('promptGestao').value = C.labGestao;
+
+let slides=[...document.querySelectorAll('.slide')];
+const body=document.body;
+const btnPresent=document.getElementById('btnPresent');
+const btnPresentHero=document.getElementById('btnPresentHero');
+const prevBtn=document.getElementById('prevBtn');
+const nextBtn=document.getElementById('nextBtn');
+const exitBtn=document.getElementById('exitBtn');
+const slideCount=document.getElementById('slideCount');
+const toast=document.getElementById('toast');
+let idx=0, presenting=false, animating=false;
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+function updateCount(){
+  slideCount.textContent=`${idx+1} / ${slides.length}`;
+  slides.forEach((s,i)=>{
+    const on = !presenting || i===idx || s.classList.contains('entering');
+    if(presenting && i!==idx && !s.classList.contains('leaving') && !s.classList.contains('entering')){
+      s.classList.remove('active');
+    }
+    s.style.pointerEvents = on ? '' : 'none';
+    if('inert' in s) s.inert = presenting && !on;
+    s.setAttribute('aria-hidden', presenting && !on ? 'true' : 'false');
+  });
+}
+function sleep(ms){return new Promise(r=>setTimeout(r, ms))}
+function resetMorph(){ morphStage.className = 'morph-stage'; }
+
+/* Tempo: delays do login (até 1.75s) + .75s form ≈ 2.5s; hold curto; dispersa .7s */
+async function playMorphTransition(onMid){
+  if(reduceMotion){ if(onMid) onMid(); return; }
+  resetMorph();
+  morphStage.classList.add('on','form');
+  await sleep(2500); // última peça (1.75s) + form (.75s) — delays do login
+  morphStage.classList.remove('form');
+  morphStage.classList.add('hold');
+  await sleep(280);
+  // Dispersa e já libera o texto: cruzamento suave (colmeia ainda saindo)
+  morphStage.classList.remove('hold');
+  morphStage.classList.add('bloom');
+  await sleep(180); // pequeno lead da dispersão
+  if(onMid) onMid();
+  await sleep(1200); // texto aparece enquanto a colmeia some
+  resetMorph();
+}
+
+async function showSlide(next){
+  if(animating || next===idx){ updateCount(); return; }
+  if(!presenting){
+    idx=next; updateCount();
+    slides[idx].scrollIntoView({behavior:'smooth',block:'start'});
+    return;
+  }
+  animating=true;
+  const cur=slides[idx];
+  const nxt=slides[next];
+  cur.classList.remove('entering');
+  cur.classList.add('leaving');
+
+  await playMorphTransition(()=>{
+    cur.classList.remove('active','leaving');
+    nxt.classList.remove('leaving');
+    void nxt.offsetWidth;
+    nxt.classList.add('active','entering');
+    idx=next; updateCount();
+  });
+
+  setTimeout(()=>nxt.classList.remove('entering'), 1400);
+  animating=false;
+}
+
+async function enterPresent(start=0){
+  presenting=true;
+  body.classList.add('present');
+  btnPresent.textContent='▣ Modo página';
+  slides.forEach(s=>s.classList.remove('active','leaving','entering'));
+  idx=start; updateCount();
+
+  await playMorphTransition(()=>{
+    const first=slides[start];
+    void first.offsetWidth;
+    first.classList.add('active','entering');
+    setTimeout(()=>first.classList.remove('entering'), 1400);
+  });
+
+  try{ await document.documentElement.requestFullscreen?.(); }catch{}
+}
+async function exitPresent(){
+  presenting=false;
+  body.classList.remove('present');
+  btnPresent.textContent='▶ Modo apresentação';
+  slides.forEach(s=>s.classList.remove('active','leaving','entering'));
+  resetMorph();
+  try{ if(document.fullscreenElement) await document.exitFullscreen(); }catch{}
+  slides[idx].scrollIntoView({behavior:'smooth',block:'start'});
+}
+function togglePresent(){ presenting ? exitPresent() : enterPresent(idx); }
+
+btnPresent.addEventListener('click', togglePresent);
+btnPresentHero.addEventListener('click', ()=>enterPresent(0));
+prevBtn.addEventListener('click', ()=>showSlide(Math.max(0, idx-1)));
+nextBtn.addEventListener('click', ()=>showSlide(Math.min(slides.length-1, idx+1)));
+exitBtn.addEventListener('click', exitPresent);
+
+window.addEventListener('keydown', (e)=>{
+  if(['INPUT','TEXTAREA'].includes(e.target.tagName)) return;
+  if(e.key==='Escape' && presenting){ e.preventDefault(); exitPresent(); return; }
+  if((e.key==='f' || e.key==='F') && presenting) document.documentElement.requestFullscreen?.();
+  if(!presenting || animating) return;
+  if(e.key==='ArrowRight' || e.key==='PageDown' || e.key===' '){ e.preventDefault(); showSlide(Math.min(slides.length-1, idx+1)); }
+  if(e.key==='ArrowLeft' || e.key==='PageUp'){ e.preventDefault(); showSlide(Math.max(0, idx-1)); }
+  if(e.key==='Home'){ e.preventDefault(); showSlide(0); }
+  if(e.key==='End'){ e.preventDefault(); showSlide(slides.length-1); }
+});
+
+document.querySelectorAll('[data-ia-prompt]').forEach(el=>{
+  const ia = C.ias.find(x=>x.id===el.getAttribute('data-ia-prompt'));
+  const txt = (ia && ia.promptExemplo) || '';
+  if('value' in el) el.value = txt; else el.textContent = txt;
+});
+
+function boxText(el){
+  if(!el) return '';
+  if('value' in el) return String(el.value||'');
+  return String(el.textContent||'');
+}
+async function copyText(text, sourceEl){
+  const str = String(text||'');
+  if(!str) return;
+  let ok=false;
+  try{
+    if(navigator.clipboard && window.isSecureContext){
+      await navigator.clipboard.writeText(str);
+      ok=true;
+    }
+  }catch{}
+  if(!ok){
+    try{
+      const el = (sourceEl && 'select' in sourceEl) ? sourceEl : null;
+      const ta = el || document.createElement('textarea');
+      if(!el){
+        ta.value=str;
+        ta.setAttribute('readonly','');
+        ta.style.cssText='position:fixed;top:8px;left:8px;width:12em;height:4em;opacity:0.01;z-index:9999';
+        document.body.appendChild(ta);
+      }
+      ta.focus();
+      ta.setSelectionRange(0, ta.value.length);
+      ok=document.execCommand('copy');
+      if(!el) ta.remove();
+      else { ta.setSelectionRange(0,0); ta.blur(); }
+    }catch{ ok=false; }
+  }
+  toast.textContent = ok ? 'Prompt copiado — cole na IA' : 'Copie manualmente no texto abaixo';
+  toast.classList.add('show');
+  setTimeout(()=>toast.classList.remove('show'),1800);
+}
+
+document.querySelectorAll('a[target="_blank"]').forEach(a=>{
+  a.addEventListener('click', async (e)=>{
+    if(!presenting) return;
+    e.preventDefault();
+    const href=a.href;
+    try{ if(document.fullscreenElement) await document.exitFullscreen(); }catch{}
+    window.open(href, '_blank', 'noopener,noreferrer');
+  });
+});
+document.querySelectorAll('[data-copy]').forEach(btn=>btn.addEventListener('click', (e)=>{
+  e.preventDefault(); e.stopPropagation();
+  const slide = btn.closest('.slide');
+  const box = slide && slide.querySelector('textarea.code, .code');
+  const text = boxText(box) || (btn.getAttribute('data-copy')==='suporte' ? C.labSuporte : C.labGestao);
+  copyText(text, box);
+}));
+document.querySelectorAll('[data-copy-ia]').forEach(btn=>btn.addEventListener('click', (e)=>{
+  e.preventDefault(); e.stopPropagation();
+  const slide = btn.closest('.slide');
+  const box = slide && slide.querySelector('textarea.ia-prompt, [data-ia-prompt]');
+  const id = btn.getAttribute('data-copy-ia');
+  const ia = C.ias.find(x=>x.id===id);
+  const text = boxText(box) || (ia && ia.promptExemplo) || '';
+  copyText(text, box);
+}));
+
+const params = new URLSearchParams(location.search);
+const wantId = params.get('slide');
+const autoPresent = params.get('present') === '1' || params.get('apresentar') === '1';
+if(wantId){
+  const found = slides.findIndex(s=>s.dataset.id===wantId);
+  if(found>=0) idx=found;
+}
+updateCount();
+document.body.classList.add('page-enter');
+setTimeout(()=>document.body.classList.remove('page-enter'), 1000);
+if(autoPresent){
+  setTimeout(()=>enterPresent(idx), 160);
+} else if(wantId && idx>0){
+  slides[idx].scrollIntoView({behavior:'smooth',block:'start'});
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+# Curso IA PublicSoft · Aula 1
+
+Abra `index.html` no navegador (Chrome / Edge).
+
+- `apoio.html` — material de apoio (filtros, cards, labs, ajuda)
+- `apresentacao.html` — slides + modo apresentação Transform
+- `conteudo.js` — conteúdo compartilhado (edite aqui para atualizar os dois)
+- `estilos.css` — tema PublicSoft (logo / colmeia)
+
+Atalhos na apresentação: ← → Espaço · Esc · F (tela cheia)
